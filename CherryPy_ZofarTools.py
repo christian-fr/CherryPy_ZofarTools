@@ -23,8 +23,9 @@ absDir = os.path.join(os.getcwd(), localDir)
 
 config = configparser.ConfigParser()
 
-CONFIGFILE = '/etc/project/settings.ini'
+CONFIGFILE = 'settings.ini'
 
+config.read(CONFIGFILE)
 
 class LoginIndex(object):
     @cherrypy.expose
@@ -134,6 +135,8 @@ class FileDemo(object):
                 <input type="submit" />
                 </form>
 
+ile "CherryPy_ZofarTools.py", line 156, in <module>
+    for key in config['users'].keys():
                 <form action="upload" method="post" enctype="multipart/form-data">
                 filename: <input type="file" name="myFile" /><br />
                 <input type="submit" />
@@ -160,12 +163,12 @@ if __name__ == '__main__':
     digest_key = ''.join(secrets.choice(alphabet) for i in range(16))
 
     server_config = {
-        'server.socket_host': '127.0.0.1',
-        'server.socket_port': 443,
-        'server.ssl_module': 'pyOpenSSL',
-        'server.ssl_certificate': config.read(CONFIGFILE).get('ssl', 'cert'),
-        'server.ssl_private_key': config.read(CONFIGFILE).get('ssl', 'key')
+        'server.socket_host': '0.0.0.0',
+        'server.socket_port': 8080
     }
+#        'server.ssl_module': 'pyOpenSSL',
+#        'server.ssl_certificate': config['ssl']['certificate'],
+#        'server.ssl_private_key': config['ssl']['key']
 
     conf = {
         '/secure': {
