@@ -66,19 +66,18 @@ class FileDemo(object):
             filename: %s<br />
             mime-type: %s
 
-            <h2>Download flowchart</h2>
-            <a href='download'>here</a>
-
             <br /><br />
 
             <h2>CherryPy Qml Reader Tools """ + str(__version__) + """</h2>
             Questionnaire.py """ + str(Questionnaire.__version__) + """<br>
-            QmlReader.py """ + str(QmlReader.__version__) + """<br><br>
+            QmlReader.py """ + str(QmlReader.__version__) + """
+            <br>
+            <br>
+            <br>
+            <h2>Download flowchart</h2>
+            <a href='download'>here</a>
 
-            <form action="download" method="post" enctype="multipart/form-data">
-            <input type="button" value="download flowchart" />
-            </form>
-
+            
 
         </body>
         </html>"""
