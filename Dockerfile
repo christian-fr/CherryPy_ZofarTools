@@ -1,4 +1,4 @@
-FROM python:3.6-alpine3.10
+FROM alpine:edge
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -9,14 +9,19 @@ WORKDIR /code
 
 # Install dependencies
 RUN \
- apk add --update --no-cache \
+ apk add --update --no-cache  \
            graphviz \
-           ttf-freefont && \
- pip install --no-cache-dir pipenv && \
- apk --purge del .build-deps
- 
-COPY Pipfile Pipfile.lock /code/
-RUN pipenv install --system
+           ttf-freefont \
+	   python3 \
+	   py3-lxml \
+	   py3-graphviz \
+	   py3-pygraphviz \
+	   py3-cryptography
+#	   && \
+# pip install --no-cache-dir pipenv
+
+#COPY Pipfile Pipfile.lock /code/
+#RUN pipenv install --system
 
 # Copy project
 COPY . /code/

@@ -1,25 +1,14 @@
 version: '3'
 
 services:
-  db:
-    image: "postgres:11"
-    environment:
-      - "POSTGRES_HOST_AUTH_METHOD=trust"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
   web:
     build: .
     command:
-      - /bin/sh
-      - -c
-      - |
-          sudo python /code/CherryPy_ZofarTools.py
+      - /bin/sh 
+      - -c 
+      - "cp /code/repositories /etc/apk/repositories && apk update && python3 /code/get-pip.py && apk add py3-cherrypy && apk add py3-networkx && pip3 install cherrypy && cherryd -d -P /code -i minimal"
     volumes:
       - .:/code
     ports:
-      - 443:443
-    depends_on:
-      - db
+      - 8000:8000
 
-volumes:
-  postgres_data:
