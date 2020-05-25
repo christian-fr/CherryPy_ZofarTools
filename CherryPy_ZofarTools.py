@@ -11,7 +11,7 @@ import os.path
 import string
 import secrets
 import getpass
-from configparser import RawConfigParser
+import configparser
 
 
 import cherrypy
@@ -21,7 +21,7 @@ from cherrypy.lib import static
 localDir = os.path.dirname(__file__)
 absDir = os.path.join(os.getcwd(), localDir)
 
-config = RawConfigParser()
+config = configparser.ConfigParser()
 
 CONFIGFILE = '/etc/project/settings.ini'
 
@@ -153,9 +153,8 @@ class FileDemo(object):
 
 if __name__ == '__main__':
     USERS = {}
-    for entry in config.read(CONFIGFILE).get('users', 'names-passwords').split(';'):
-        tmp = entry.split(':')
-        USERS[tmp[0]] = tmp[1]
+    for key in config['users'].keys():
+        USERS[key] = config['users'][key]
 
     alphabet = string.ascii_letters + string.digits
     digest_key = ''.join(secrets.choice(alphabet) for i in range(16))
