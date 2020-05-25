@@ -1,18 +1,14 @@
 __author__ = "Christian Friedrich"
 __maintainer__ = "Christian Friedrich"
 __license__ = "GPL v3"
-__version__ = "0.2.0"
+__version__ = "0.1.1"
 __status__ = "Prototype"
 __name__ = "Questionnaire"
 
 # last edited: 2020-04-01
 
 import re
-import networkx as nx
-import logging
-import time
-from os import path, mkdir
-import errno
+
 
 class Title:
     def __init__(self):
@@ -394,9 +390,8 @@ class Sources:
 
 
 class Variable:
-    def __init__(self, varname, vartype, varplace=None):
+    def __init__(self, varname, vartype):
         self.__allowed_vartypes = ['boolean', 'singleChoiceAnswerOption', 'string', 'number']
-        self.__allowed_varplaces = ['body', 'triggers', None]
         if isinstance(varname, str) and isinstance(vartype, str):
             self.varname = varname
             if vartype in self.__allowed_vartypes:
@@ -406,29 +401,16 @@ class Variable:
         else:
             raise TypeError('Input not of type string')
 
-        self.set_varplace(varplace=varplace, varname=varname)
-
-    def set_varplace(self, varplace, varname):
-        if isinstance(varplace, str) or varplace is None:
-            self.varplace = varplace
-            if varplace in self.__allowed_varplaces:
-                self.varplace = varplace
-            else:
-                raise ValueError('Varplace unknown/not allowed: ' + str(varname) + ', ' + str(varplace))
-        else:
-            raise TypeError('Input not of type string')
-        return self
-
     def __str__(self):
         return str(self.varname)
 
 
 class Variables:
     def __init__(self):
-        self.variables = {}
+        self.dict_of_variables = {}
 
     def __len__(self):
-        return len(self.variables)
+        return len(self.dict_of_variables)
 
     def __str__(self):
         return str(self.list_details_str())
@@ -438,40 +420,36 @@ class Variables:
         :return: dictionary of {varname: vartype}
         """
         dict_tmp = {}
-        for var in self.variables:
-            dict_tmp[var.varname] = self.variables[var].vartype
+        for var in self.dict_of_variables:
+            dict_tmp[var.varname] = self.dict_of_variables[var].vartype
         return dict_tmp
 
     def list_all_vars(self):
-        return [var.varname for var in self.variables.values()]
+        return [var.varname for var in self.dict_of_variables]
 
     def list_all_vartypes(self):
-        return [var.vartype for var in self.variables.values()]
+        return [var.vartype for var in self.dict_of_variables]
 
     def list_details_str(self):
-        return [str(self.variables[var].varname) + ': ' + str(self.variables[var].vartype) for var in self.variables]
+        return [str(self.dict_of_variables[var].varname) + ': ' + str(self.dict_of_variables[var].vartype) for var in self.dict_of_variables]
 
-    def add_variable(self, variable_object, replace=False):
+    def add_variable(self, variable_object):
         if isinstance(variable_object, Variable):
-            if variable_object.varname not in [self.variables[var].varname for var in self.variables]:
-                self.variables[variable_object.varname] = variable_object
+            if variable_object.varname not in [self.dict_of_variables[var].varname for var in self.dict_of_variables]:
+                self.dict_of_variables[variable_object.varname] = variable_object
             else:
-                if not replace:
-                    # ToDo: error handling! maybe error message: yes/no ??
-                    # raise ValueError('Variable name exists already!')
-                    print("Variable " + str(variable_object.varname) + " already exists.")
+                raise ValueError('Variable name exists already!')
         else:
             raise TypeError('Input not of type Variable')
 
-
     def delete_variable(self, varname):
         if isinstance(varname, str):
-            tmp_list = [self.variables[var].varname for var in self.variables]
-            tmp_var_list = self.variables.keys()
+            tmp_list = [self.dict_of_variables[var].varname for var in self.dict_of_variables]
+            tmp_var_list = self.dict_of_variables.keys()
             if varname in tmp_list:
                 for var in tmp_var_list:
                     if var.varname is varname:
-                        self.variables.pop(var)
+                        self.dict_of_variables.pop(var)
             else:
                 raise ValueError('Varname not found!')
         else:
@@ -479,8 +457,8 @@ class Variables:
 
     def check_if_vartype(self, varname, vartype):
         if isinstance(varname, str) and isinstance(vartype, str):
-            if varname in [self.variables[var].varname for var in self.variables]:
-                for var in [self.variables[var] for var in self.variables if var.varname is varname]:
+            if varname in [self.dict_of_variables[var].varname for var in self.dict_of_variables]:
+                for var in [self.dict_of_variables[var] for var in self.dict_of_variables if var.varname is varname]:
                     print(str(var))
 
                     return var.vartype is vartype
@@ -494,16 +472,9 @@ class QmlPages:
     def __init__(self):
         self.pages = {}
 
-    def add_page(self, qmlpage, replace=False):
+    def add_page(self, qmlpage):
         assert isinstance(qmlpage, QmlPage)
-        if qmlpage.uid in self.pages.keys():
-            if not replace:
-                raise KeyError('Page already exists and overwrite is False.')
-            else:
-                ('Page "' + qmlpage.uid + '" will be replaced.')
-                self.pages[qmlpage.uid] = qmlpage
-        else:
-            self.pages[qmlpage.uid] = qmlpage
+        self.pages[qmlpage.uid] = qmlpage
 
     def drop_page(self, uid):
         assert isinstance(uid, str)
@@ -518,12 +489,6 @@ class QmlPages:
             tmp_list.append(key)
         return tmp_list
 
-
-class DuplicateVariables(Variables):
-    def __init__(self):
-        super().__init__()
-
-
 class QmlPage(UniqueObject):
     def __init__(self, uid, declared=True):
         super().__init__(uid)
@@ -534,7 +499,6 @@ class QmlPage(UniqueObject):
         self.variables = Variables()
         self.triggers = Triggers()
         self.sources = Sources()
-        self.duplicate_variables = DuplicateVariables()
 
     def add_sources(self, source):
         self.sources.add_source(source)
@@ -591,134 +555,17 @@ class QmlPage(UniqueObject):
 
 
 class Questionnaire:
-    def __init__(self, file=None, filename='questionnaire', title='Zofar Survey'):
+    def __init__(self, filename='questionnaire', title='Zofar Survey'):
         """
         :param filename: string of source filename
         """
-        self.logger = logging.getLogger('debug')
-        self.DiGraph = nx.DiGraph()
         self.filename = None
-        self.file = file
         self.set_filename(filename)
         self.title = None
         self.set_title(title)
-        self.pgv_graph = None
+
         self.variables = Variables()
         self.pages = QmlPages()
-
-    def startup_logger(self, log_level=logging.DEBUG):
-        """
-        CRITICAL: 50, ERROR: 40, WARNING: 30, INFO: 20, DEBUG: 10, NOTSET: 0
-        """
-        logging.basicConfig(level=log_level)
-        fh = logging.FileHandler("{0}.log".format('log_' + __name__))
-        fh.setLevel(log_level)
-        fh_format = logging.Formatter('%(name)s\t%(module)s\t%(funcName)s\t%(asctime)s\t%(lineno)d\t'
-                                      '%(levelname)-8s\t%(message)s')
-        fh.setFormatter(fh_format)
-        self.logger.addHandler(fh)
-
-    def transitions_to_nodes_edges(self, truncate=False):
-        logging.info("transitions_to_nodes_edges")
-        print("transitions_nodes_to_edges")
-        self.create_readable_conditions()
-        self.startup_logger(log_level=logging.DEBUG)
-
-        for page in self.pages.pages.values():
-            self.DiGraph.add_node(page.uid)  # create nodes
-            cnt = 0
-            dict_transitions = {}
-            for transition in page.transitions.transitions.values():
-                if transition.condition is not None:
-                    if transition.target in dict_transitions.keys():
-                        dict_transitions[transition.target] = dict_transitions[transition.target] + ' |\n(' + '[' + str(cnt) + '] ' + transition.condition_new + ']' + ')'
-                        self.DiGraph.add_edge(page.uid, transition.target, label='[' + str(cnt) + '] ' + dict_transitions[transition.target])
-                    else:
-                        dict_transitions[transition.target] = '(' + '[' + str(cnt) + '] ' + transition.condition_new + ')'
-
-                    self.DiGraph.add_edge(page.uid, transition.target, label=dict_transitions[transition.target])
-
-                else:
-                    if transition.target in dict_transitions.keys():
-                        self.DiGraph.add_edge(page.uid, transition.target, label='')
-                    else:
-                        if cnt is 0:
-                            self.DiGraph.add_edge(page.uid, transition.target, label='')
-                        if cnt is not 0:
-                            self.DiGraph.add_edge(page.uid, transition.target, label='[' + str(cnt) + ']')
-
-                cnt = cnt + 1
-
-    def create_graph(self):
-        """
-        :param: None
-        :return: None
-        """
-        logging.info("create_graph")
-        self.transitions_to_nodes_edges()
-        self.init_pgv_graph()
-        self.prepare_pgv_graph()
-
-    def init_pgv_graph(self, graph_name='graph'):
-        """
-        :param: graph_name: string
-        :return: None
-        """
-        logging.info("init_pgv_graph")
-        self.pgv_graph = nx.nx_agraph.to_agraph(self.DiGraph)
-
-        t = time.localtime()
-        timestamp = time.strftime('%Y-%m-%d_%H-%M', t)
-
-        self.pgv_graph.node_attr['shape'] = 'box'
-        self.pgv_graph.graph_attr['label'] = 'title: ' + self.title + '\nfile: ' + self.filename + '\n timestamp: ' + timestamp
-        self.pgv_graph.layout("dot")
-
-    def prepare_pgv_graph(self):
-        """
-        :param:
-        :return:
-        """
-        logging.info("prepare_pgv_graph")
-        output_folder = str(path.join(str(path.split(self.file)[0]), 'flowcharts'))
-        self.logger.info('output_folder: ' + output_folder)
-        try:
-            mkdir(output_folder)
-            self.logger.info('"' + output_folder + '" created.')
-        except OSError as exc:
-            self.logger.info('folder could not be created at first attempt: ' + output_folder)
-            if exc.errno == errno.EEXIST and path.isdir(output_folder):
-                self.logger.info('folder exists already: ' + output_folder)
-                pass
-            self.logger.exception('folder could not be created')
-
-        t = time.localtime()
-        timestamp = time.strftime('%Y-%m-%d_%H-%M', t)
-        filename = timestamp + '_' + path.splitext(path.split(self.file)[1])[0]
-        self.logger.info('output_gml: ' + str(path.join(output_folder, filename + '.gml')))
-        nx.write_gml(self.DiGraph, path.join(output_folder, filename + '.gml'))
-        self.logger.info('output_png: ' + str(path.join(output_folder, filename + '.gml')))
-        self.draw_pgv_graph(path.join(output_folder, filename + '.png'))
-
-    def draw_pgv_graph(self, output_file='output_file.png'):
-        self.pgv_graph.draw(output_file)
-
-    def append_other_questionnaire(self, questionnaire_object):
-        """
-        :param: questionnaire_object: other Questionnaire.Questionnaire object that will be appended; duplicate pages in original Questionnaire will be overwritten by pages of the newly appended Questionnaire.
-        :return: nothing.
-        """
-        self.logger.info("processing questionnaire: " + str(questionnaire_object.file) + ' / ' + str(questionnaire_object.filename))
-        assert isinstance(questionnaire_object, Questionnaire)
-
-        for appended_page in questionnaire_object.pages.pages.values():
-            self.logger.info("pages added: " + str(appended_page.uid))
-            # ToDo: error handling! maybe error message: yes/no ?? output: list of duplicate pages / replaced pages
-            self.pages.add_page(appended_page, replace=True)
-
-        for appended_variable in questionnaire_object.variables.variables.values():
-            # ToDo: error handling! maybe error message: yes/no ?? output: list of duplicate variables / replaced variables
-            self.variables.add_variable(appended_variable)
 
     def create_readable_conditions(self):
         regex1 = re.compile(r'\s+')
