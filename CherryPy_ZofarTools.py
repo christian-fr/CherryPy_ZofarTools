@@ -62,9 +62,9 @@ class FileDemo(object):
         out = """
         <html>
         <body>
-            myFile length: %s<br />
-            myFile filename: %s<br />
-            myFile mime-type: %s
+            file length: %s<br />
+            filename: %s<br />
+            mime-type: %s
 
             <h2>Download flowchart</h2>
             <a href='download'>here</a>
@@ -87,9 +87,9 @@ class FileDemo(object):
         <html>
         <body>
             Error! File is either too large or not of type 'text/xml' <br><br>
-            myFile length: %s<br />
-            myFile filename: %s<br />
-            myFile mime-type: %s  
+            file length: %s<br />
+            filename: %s<br />
+            mime-type: %s  
         </body>
         </html>"""
 
