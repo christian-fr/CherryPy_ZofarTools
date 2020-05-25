@@ -71,12 +71,12 @@ class FileDemo(object):
 
             <br /><br />
 
-            <h2>Qml Reader Tools """ + str(__version__) + """</h2>
+            <h2>CherryPy Qml Reader Tools """ + str(__version__) + """</h2>
             Questionnaire.py """ + str(Questionnaire.__version__) + """<br>
             QmlReader.py """ + str(QmlReader.__version__) + """<br><br>
 
             <form action="download" method="post" enctype="multipart/form-data">
-            Flowcharts<input type="submit" />
+            <input type="button" value="download flowchart" />
             </form>
 
 
@@ -129,14 +129,11 @@ class FileDemo(object):
         out = """
             <html><body>
 
-
                 <form action="upload" method="post" enctype="multipart/form-data">
                 filename: <input type="file" name="myFile" /><br />
                 <input type="submit" />
                 </form>
 
-ile "CherryPy_ZofarTools.py", line 156, in <module>
-    for key in config['users'].keys():
                 <form action="upload" method="post" enctype="multipart/form-data">
                 filename: <input type="file" name="myFile" /><br />
                 <input type="submit" />
