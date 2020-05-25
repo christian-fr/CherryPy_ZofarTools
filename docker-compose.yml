@@ -6,7 +6,7 @@ services:
     command:
       - /bin/sh 
       - -c 
-      - "cp /code/repositories /etc/apk/repositories && apk update && python3 /code/get-pip.py && apk add py3-cherrypy && apk add py3-networkx && pip3 install cherrypy && python3 minimal.py"
+      - "cp /code/repositories /etc/apk/repositories && apk update && python3 /code/get-pip.py && apk add py3-cherrypy && apk add py3-networkx && pip3 install cherrypy && python3 CherryPy_ZofarTools.py"
     volumes:
       - .:/code
     ports:
