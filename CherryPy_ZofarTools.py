@@ -1,7 +1,7 @@
 __author__ = "Christian Friedrich"
 __maintainer__ = "Christian Friedrich"
 __license__ = "GPL v3"
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __status__ = "Prototype"
 
 import QmlReader
@@ -160,11 +160,11 @@ if __name__ == '__main__':
 
     server_config = {
         'server.socket_host': '0.0.0.0',
-        'server.socket_port': 8080
+        'server.socket_port': 443,
+        'server.ssl_module': 'builtin',
+        'server.ssl_certificate': config['ssl']['certificate'],
+        'server.ssl_private_key': config['ssl']['key']
     }
-#        'server.ssl_module': 'pyOpenSSL',
-#        'server.ssl_certificate': config['ssl']['certificate'],
-#        'server.ssl_private_key': config['ssl']['key']
 
     conf = {
         '/secure': {
